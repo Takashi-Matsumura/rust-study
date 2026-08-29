@@ -1,0 +1,63 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { getLesson, LESSONS } from "@/content/lessons";
+import { ExerciseClient } from "@/components/ExerciseClient";
+
+export function generateStaticParams() {
+  return LESSONS.map((lesson) => ({ lessonId: lesson.id }));
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/learn/[lessonId]">): Promise<Metadata> {
+  const { lessonId } = await params;
+  const lesson = getLesson(lessonId);
+  return { title: lesson ? `${lesson.title} | Rust学習` : "レッスン | Rust学習" };
+}
+
+export default async function LessonPage({ params }: PageProps<"/learn/[lessonId]">) {
+  const { lessonId } = await params;
+  const lesson = getLesson(lessonId);
+
+  if (!lesson) notFound();
+
+  return (
+    <main className="flex flex-1 flex-col gap-4 p-4">
+      <div className="flex items-center gap-2 text-sm">
+        <Link href="/" className="text-foreground/60 hover:underline">
+          ← 学習マップ
+        </Link>
+        <span className="rounded bg-foreground/10 px-2 py-0.5 font-mono text-xs">
+          {lesson.milestone}
+        </span>
+      </div>
+
+      <h1 className="text-xl font-bold">{lesson.title}</h1>
+
+      <div className="flex flex-1 flex-col gap-6 md:flex-row">
+        <div className="lesson-body flex-1">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.body}</ReactMarkdown>
+          {lesson.bookUrl && (
+            <a
+              href={lesson.bookUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block text-sm text-blue-600 underline dark:text-blue-400"
+            >
+              The Book で詳しく読む →
+            </a>
+          )}
+        </div>
+
+        {lesson.exercise && (
+          <div className="flex-1">
+            <ExerciseClient lessonId={lesson.id} exercise={lesson.exercise} />
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
