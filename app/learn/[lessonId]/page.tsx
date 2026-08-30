@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getLesson, LESSONS } from "@/content/lessons";
-import { ExerciseClient } from "@/components/ExerciseClient";
+import { LessonWorkspace } from "@/components/LessonWorkspace";
 
 export function generateStaticParams() {
   return LESSONS.map((lesson) => ({ lessonId: lesson.id }));
@@ -37,27 +37,25 @@ export default async function LessonPage({ params }: PageProps<"/learn/[lessonId
 
       <h1 className="text-xl font-bold">{lesson.title}</h1>
 
-      <div className="flex flex-1 flex-col gap-6 md:flex-row">
-        <div className="lesson-body flex-1">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.body}</ReactMarkdown>
-          {lesson.bookUrl && (
-            <a
-              href={lesson.bookUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-block text-sm text-blue-600 underline dark:text-blue-400"
-            >
-              The Book で詳しく読む →
-            </a>
-          )}
-        </div>
-
-        {lesson.exercise && (
-          <div className="flex-1">
-            <ExerciseClient lessonId={lesson.id} exercise={lesson.exercise} />
-          </div>
-        )}
-      </div>
+      <LessonWorkspace
+        lessonId={lesson.id}
+        exercise={lesson.exercise}
+        explanation={
+          <>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.body}</ReactMarkdown>
+            {lesson.bookUrl && (
+              <a
+                href={lesson.bookUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block text-sm text-blue-600 underline dark:text-blue-400"
+              >
+                The Book で詳しく読む →
+              </a>
+            )}
+          </>
+        }
+      />
     </main>
   );
 }
