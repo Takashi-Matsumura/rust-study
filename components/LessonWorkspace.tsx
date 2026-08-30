@@ -188,7 +188,7 @@ export function LessonWorkspace({
           </div>
         </div>
       ) : (
-        <div className="flex flex-1 flex-col gap-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
           <LessonHeader
             lessonTitle={lessonTitle}
             milestone={milestone}
@@ -197,10 +197,12 @@ export function LessonWorkspace({
             onToggleFocus={() => setFocusMode(true)}
           />
 
-          <div className="flex flex-1 flex-col gap-6 md:flex-row">
-            <div className="lesson-body flex-1">{explanation}</div>
+          {/* md以上では左右をそれぞれ内部スクロールさせ、ページ全体の縦スクロールと
+              二重にならないようにする。md未満では従来どおり画面全体でスクロールする */}
+          <div className="flex min-h-0 flex-1 flex-col gap-6 md:flex-row md:overflow-hidden">
+            <div className="lesson-body flex-1 md:min-h-0 md:overflow-y-auto">{explanation}</div>
 
-            <div className="flex-1">
+            <div className="flex-1 md:min-h-0 md:overflow-y-auto">
               {exercise && <ExerciseClient lessonId={lessonId} exercise={exercise} />}
             </div>
           </div>

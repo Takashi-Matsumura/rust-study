@@ -24,7 +24,7 @@ export default async function LessonPage({ params }: PageProps<"/learn/[lessonId
   if (!lesson) notFound();
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4">
+    <main className="flex flex-1 flex-col gap-4 p-4 md:h-[100dvh] md:flex-none md:overflow-hidden">
       <LessonWorkspace
         lessonId={lesson.id}
         lessonTitle={lesson.title}
