@@ -35,10 +35,20 @@ interface ExerciseClientProps {
   exercise: Exercise;
   /** 集中モード中はエディタの表示領域を広げる */
   focusMode?: boolean;
+  /**
+   * ヒント・解答例をこのコンポーネント内に表示するか。
+   * 集中モードではLessonWorkspaceがAIチューターと同じ列にまとめて表示するため false にする。
+   */
+  showHints?: boolean;
 }
 
 /** レッスンの演習パネル。エディタ・採点・ヒント・解答例を1つにまとめる */
-export function ExerciseClient({ lessonId, exercise, focusMode }: ExerciseClientProps) {
+export function ExerciseClient({
+  lessonId,
+  exercise,
+  focusMode,
+  showHints = true,
+}: ExerciseClientProps) {
   const [code, setCode] = useState(exercise.starterCode);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RunResult | null>(null);
@@ -210,10 +220,12 @@ export function ExerciseClient({ lessonId, exercise, focusMode }: ExerciseClient
         </details>
       )}
 
-      <div className="flex flex-col gap-2 border-t border-foreground/10 pt-3">
-        <HintDisclosure hints={exercise.hints} />
-        <SolutionDisclosure solution={exercise.solution} />
-      </div>
+      {showHints && (
+        <div className="flex flex-col gap-2 border-t border-foreground/10 pt-3">
+          <HintDisclosure hints={exercise.hints} />
+          <SolutionDisclosure solution={exercise.solution} />
+        </div>
+      )}
     </div>
   );
 }

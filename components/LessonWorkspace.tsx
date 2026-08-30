@@ -3,6 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ExerciseClient } from "@/components/ExerciseClient";
+import { HintDisclosure } from "@/components/HintDisclosure";
+import { SolutionDisclosure } from "@/components/SolutionDisclosure";
 import { TutorPanel } from "@/components/tutor/TutorPanel";
 import { TutorProvider } from "@/components/tutor/TutorContext";
 import { RobotIcon } from "@/components/tutor/RobotIcon";
@@ -23,9 +25,10 @@ function isTextInput(target: EventTarget | null): boolean {
 
 /**
  * レッスン画面の2カラムレイアウトと「集中モード」の切り替えを管理する。
- * 集中モードは画面全体を覆う固定オーバーレイになり、エディタ列・AIチューター列は
- * それぞれ内部でスクロールする(ウィンドウの高さが変わっても常にチャット入力欄まで
- * 手が届く)。通常モードでは右下のフローティングボタンからAIチューターをドロワーで開閉する。
+ * 集中モードは画面全体を覆う固定オーバーレイになり、左列をコードエディタ、
+ * 右列をヒント・解答例・AIチューターのサポート情報に分ける。両列とも内部で
+ * スクロールする(ウィンドウの高さが変わっても常にチャット入力欄まで手が届く)。
+ * 通常モードでは右下のフローティングボタンからAIチューターをドロワーで開閉する。
  */
 export function LessonWorkspace({
   lessonId,
@@ -73,14 +76,31 @@ export function LessonWorkspace({
           </div>
 
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden md:flex-row">
+            {/* 左: コードを書いて実行することに専念する列 */}
             <div className="min-h-0 flex-[3] overflow-y-auto">
               {exercise && (
-                <ExerciseClient lessonId={lessonId} exercise={exercise} focusMode />
+                <ExerciseClient
+                  lessonId={lessonId}
+                  exercise={exercise}
+                  focusMode
+                  showHints={false}
+                />
               )}
             </div>
 
-            <div className="min-h-0 min-w-[320px] flex-[2] overflow-hidden">
-              <TutorPanel />
+            {/* 右: ヒント・解答例・AIチューターをまとめたサポート列 */}
+            <div className="flex min-h-0 min-w-[320px] flex-[2] flex-col gap-3 overflow-hidden">
+              {exercise && (exercise.hints.length > 0 || exercise.solution) && (
+                <div className="max-h-[35vh] flex-none overflow-y-auto rounded-md border border-foreground/10 p-3">
+                  <div className="flex flex-col gap-2">
+                    <HintDisclosure hints={exercise.hints} />
+                    <SolutionDisclosure solution={exercise.solution} />
+                  </div>
+                </div>
+              )}
+              <div className="min-h-0 flex-1 overflow-hidden">
+                <TutorPanel />
+              </div>
             </div>
           </div>
         </div>
