@@ -39,6 +39,8 @@ export default async function LessonPage({ params }: PageProps<"/learn/[lessonId
 
       <LessonWorkspace
         lessonId={lesson.id}
+        lessonTitle={lesson.title}
+        milestone={lesson.milestone}
         exercise={lesson.exercise}
         explanation={
           <>
