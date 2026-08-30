@@ -36,8 +36,8 @@ let height: f64 = 172.5;
   bookUrl: "https://doc.rust-jp.rs/book-ja/ch03-02-data-types.html",
   exercise: {
     prompt:
-      "age(u32, 20)・height(f64, 172.5)・is_student(bool, true)・grade(char, 'A') を型注釈付きで宣言し、\n" +
-      "`age=20 height=172.5 is_student=true grade=A` と表示してください。",
+      "型注釈を付けて、ageをu32型で20、heightをf64型で172.5、is_studentをbool型でtrue、" +
+      "gradeをchar型で'A'として宣言し、「age=20 height=172.5 is_student=true grade=A」と表示してください。",
     starterCode: `fn main() {
     // TODO: 型注釈付きで4つの変数を宣言してください
     let age = 20;
