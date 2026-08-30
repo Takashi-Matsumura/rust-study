@@ -7,6 +7,7 @@ import {
   MAX_QUESTION_LENGTH,
   MAX_RUN_OUTPUT_LENGTH,
   MAX_SELECTION_LENGTH,
+  PLAYGROUND_LESSON_ID,
   tutorRateLimiter,
 } from "@/lib/tutor/config";
 import { streamTutorReply, TutorUnavailableError, type ChatMessage } from "@/lib/tutor/client";
@@ -83,8 +84,9 @@ export async function POST(request: NextRequest) {
   }
 
   const tutorRequest = parsed.data as TutorRequest;
-  const lesson = getLesson(tutorRequest.lessonId);
-  if (!lesson) {
+  const isPlayground = tutorRequest.lessonId === PLAYGROUND_LESSON_ID;
+  const lesson = isPlayground ? null : (getLesson(tutorRequest.lessonId) ?? null);
+  if (!isPlayground && !lesson) {
     return NextResponse.json({ error: "レッスンが見つかりません。" }, { status: 400 });
   }
 

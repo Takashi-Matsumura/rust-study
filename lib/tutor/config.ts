@@ -30,3 +30,9 @@ export const MAX_LESSON_BODY_CHARS = 2_000;
 
 /** 会話履歴として受け付ける最大件数 */
 export const MAX_HISTORY_TURNS = 6;
+
+/**
+ * Playground(自由に書いて試す画面)からのAIチューター利用を示す仮想レッスンID。
+ * 実在のレッスンではないため、api/tutor側ではgetLessonによる検証をスキップする。
+ */
+export const PLAYGROUND_LESSON_ID = "playground";

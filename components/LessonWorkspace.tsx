@@ -8,6 +8,7 @@ import { SolutionDisclosure } from "@/components/SolutionDisclosure";
 import { TutorPanel } from "@/components/tutor/TutorPanel";
 import { TutorProvider } from "@/components/tutor/TutorContext";
 import { RobotIcon } from "@/components/tutor/RobotIcon";
+import { BackIcon } from "@/components/icons/BackIcon";
 import type { Exercise } from "@/content/lessons/types";
 
 interface LessonWorkspaceProps {
@@ -21,25 +22,6 @@ interface LessonWorkspaceProps {
 
 function isTextInput(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.tagName === "TEXTAREA" || target.tagName === "INPUT");
-}
-
-/** 集中モードのヘッダーで使う「学習マップへ戻る」の矢印アイコン */
-function BackIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M19 12H5" />
-      <path d="M12 19l-7-7 7-7" />
-    </svg>
-  );
 }
 
 /** ヘッダーで使う「集中モードを終了」の閉じるアイコン */

@@ -38,23 +38,29 @@ function truncate(text: string, maxChars: number): string {
   return `${text.slice(0, maxChars)}\n…(以下省略)`;
 }
 
-export function buildSystemPrompt(kind: TutorKind, lesson: Lesson): string {
-  const lessonBody = truncate(lesson.body, MAX_LESSON_BODY_CHARS);
-  const exercisePrompt = lesson.exercise?.prompt ?? "(この演習には課題文がありません)";
+/**
+ * lessonがnullのときはPlayground(自由に書いて試す画面)からの質問。
+ * 特定の演習に紐づかないため、レッスン文脈の節は省略する。
+ */
+export function buildSystemPrompt(kind: TutorKind, lesson: Lesson | null): string {
+  const contextSection = lesson
+    ? `# レッスン文脈
+<lesson_title>${lesson.title}</lesson_title>
+<lesson_body>
+${truncate(lesson.body, MAX_LESSON_BODY_CHARS)}
+</lesson_body>
+<exercise_prompt>
+${lesson.exercise?.prompt ?? "(この演習には課題文がありません)"}
+</exercise_prompt>`
+    : `# 場面
+特定のレッスンに紐づかない「自由に書いて試す」プレイグラウンド画面での質問です。学習者が自由に書いたコードについて相談されています。`;
 
   return `${SYSTEM_PROMPT_BASE}
 
 # 今回の場面
 ${KIND_INSTRUCTIONS[kind]}
 
-# レッスン文脈
-<lesson_title>${lesson.title}</lesson_title>
-<lesson_body>
-${lessonBody}
-</lesson_body>
-<exercise_prompt>
-${exercisePrompt}
-</exercise_prompt>`;
+${contextSection}`;
 }
 
 export function buildUserContent(request: TutorRequest): string {
