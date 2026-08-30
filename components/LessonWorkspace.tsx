@@ -23,6 +23,44 @@ function isTextInput(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.tagName === "TEXTAREA" || target.tagName === "INPUT");
 }
 
+/** 集中モードのヘッダーで使う「学習マップへ戻る」の矢印アイコン */
+function BackIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M19 12H5" />
+      <path d="M12 19l-7-7 7-7" />
+    </svg>
+  );
+}
+
+/** 集中モードのヘッダーで使う「終了」の閉じるアイコン */
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M18 6 6 18" />
+      <path d="M6 6l12 12" />
+    </svg>
+  );
+}
+
 /**
  * レッスン画面の2カラムレイアウトと「集中モード」の切り替えを管理する。
  * 集中モードは画面全体を覆う固定オーバーレイになり、左列をコードエディタ、
@@ -58,8 +96,13 @@ export function LessonWorkspace({
         <div className="fixed inset-0 z-30 flex flex-col gap-4 bg-background p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-sm">
-              <Link href="/" className="text-foreground/60 hover:underline">
-                ← 学習マップ
+              <Link
+                href="/"
+                aria-label="学習マップに戻る"
+                title="学習マップに戻る"
+                className="rounded-md p-1.5 text-foreground/60 hover:bg-foreground/5 hover:text-foreground"
+              >
+                <BackIcon className="h-4 w-4" />
               </Link>
               <span className="rounded bg-foreground/10 px-2 py-0.5 font-mono text-xs">
                 {milestone}
@@ -69,9 +112,11 @@ export function LessonWorkspace({
             <button
               type="button"
               onClick={() => setFocusMode(false)}
-              className="rounded-md border border-foreground/20 px-3 py-1 text-xs text-foreground/70 hover:bg-foreground/5"
+              aria-label="集中モードを終了"
+              title="集中モードを終了"
+              className="rounded-md border border-foreground/20 p-1.5 text-foreground/70 hover:bg-foreground/5"
             >
-              ✕ 集中モードを終了
+              <CloseIcon className="h-4 w-4" />
             </button>
           </div>
 
