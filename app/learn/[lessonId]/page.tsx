@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -26,17 +25,6 @@ export default async function LessonPage({ params }: PageProps<"/learn/[lessonId
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4">
-      <div className="flex items-center gap-2 text-sm">
-        <Link href="/" className="text-foreground/60 hover:underline">
-          ← 学習マップ
-        </Link>
-        <span className="rounded bg-foreground/10 px-2 py-0.5 font-mono text-xs">
-          {lesson.milestone}
-        </span>
-      </div>
-
-      <h1 className="text-xl font-bold">{lesson.title}</h1>
-
       <LessonWorkspace
         lessonId={lesson.id}
         lessonTitle={lesson.title}
