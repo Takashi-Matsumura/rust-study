@@ -18,6 +18,7 @@
 - **rustcエラーの日本語解説** — `E0382`(ムーブ済みの値)のような初学者がつまずきやすいエラーを、日本語で「何が起きたか」「どう直すか」まで解説します
 - **進捗の自動保存** — 完了したレッスンはブラウザの`localStorage`に保存され、次回アクセス時も続きから学習できます
 - **自由に書けるPlayground** — レッスンを離れて自由にRustコードを試せる画面も用意しています
+- **AIチューター(任意)** — ローカルで動くLLM(llama-server等のOpenAI互換API)と接続すると、集中モードの右パネルや通常モードのドロワーから質問できます。完成コードは提示せず、考え方やエラーの読み方をヒントとして返す家庭教師役です
 
 ## 技術スタック
 
@@ -37,6 +38,25 @@ npm run dev
 
 [http://localhost:3000](http://localhost:3000) を開くと学習マップが表示されます。
 
+### AIチューターを使う場合
+
+AIチューターは任意機能です。ローカルPCで [llama-server](https://github.com/ggml-org/llama.cpp) など
+OpenAI互換の `/v1/chat/completions` を話すサーバを起動しておくと、レッスン画面から質問できるようになります。
+
+```bash
+cp .env.local.example .env.local
+# 既定値は http://127.0.0.1:8080/v1 (llama-serverの既定ポート)
+```
+
+`.env.local` で以下を設定できます。
+
+| 変数 | 説明 | 既定値 |
+| --- | --- | --- |
+| `TUTOR_BASE_URL` | OpenAI互換APIのベースURL | `http://127.0.0.1:8080/v1` |
+| `TUTOR_MODEL` | 使用するモデル名(llama-serverは省略可) | (省略) |
+
+サーバが起動していない場合、AIチューターは接続エラーを表示しますが、採点機能など他の機能には影響しません。
+
 ## ディレクトリ構成
 
 ```
@@ -45,8 +65,10 @@ app/
   learn/[lessonId]/         レッスン画面
   playground/               自由記述のPlayground
   api/run/                  コード実行を中継するAPI Route
+  api/tutor/                AIチューターへの問い合わせを中継するAPI Route(ストリーミング)
 lib/
   runner/                   Rustコード実行の抽象化とPlayground実装
+  tutor/                    AIチューターのプロンプト構築とローカルLLMクライアント
   grading.ts                演習の自動採点ロジック
   rustc-errors.ts           rustcエラーコード→日本語解説
   progress.ts               学習進捗(localStorage)
@@ -54,6 +76,7 @@ content/
   curriculum.ts             M0〜M10のマイルストーン定義
   lessons/                  各レッスンの本文・演習・採点条件
 components/                 UIコンポーネント
+components/tutor/           AIチューターのパネル・会話状態・共有コンテキスト
 ```
 
 ## ライセンス
