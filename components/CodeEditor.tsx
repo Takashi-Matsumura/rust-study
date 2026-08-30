@@ -7,6 +7,17 @@ import { rust } from "@codemirror/lang-rust";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
 
+/**
+ * @uiw/react-codemirrorが自動で足すheight:100%は、内側の.cm-scroller(実際に
+ * 高さを持つべき領域)がcm-editor(display:flexのflexコンテナ)の中で
+ * flex-grow:0のままなので効かず、コードが短いとエディタ下部に大きな空白ができる。
+ * .cm-scrollerを明示的にflex-growさせ、cm-editorの高さいっぱいまで広げる。
+ */
+const fillHeightTheme = EditorView.theme({
+  "&": { display: "flex", flexDirection: "column" },
+  ".cm-scroller": { flexGrow: 1, minHeight: 0 },
+});
+
 interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
@@ -58,7 +69,7 @@ export function CodeEditor({
       onStatistics={onSelectionChange ? handleStatistics : undefined}
       readOnly={readOnly}
       theme={oneDark}
-      extensions={[rust(), fontSizeTheme]}
+      extensions={[rust(), fontSizeTheme, fillHeightTheme]}
       height="100%"
       minHeight={minHeight ?? "200px"}
       basicSetup={{ tabSize: 4 }}

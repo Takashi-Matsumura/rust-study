@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ExerciseClient } from "@/components/ExerciseClient";
 import { TutorPanel } from "@/components/tutor/TutorPanel";
 import { TutorProvider } from "@/components/tutor/TutorContext";
+import { RobotIcon } from "@/components/tutor/RobotIcon";
 import type { Exercise } from "@/content/lessons/types";
 
 interface LessonWorkspaceProps {
@@ -75,9 +76,9 @@ export function LessonWorkspace({ lessonId, exercise, explanation }: LessonWorks
             aria-label="AIチューターを開く"
             // bottom-4 right-4は開発時にNext.jsのDevツールインジケータと重なりクリックを奪われるため、
             // その上(bottom-20)に配置してずらす
-            className="fixed bottom-20 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-foreground text-xl text-background shadow-lg"
+            className="fixed bottom-20 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-foreground text-background shadow-lg"
           >
-            🦀
+            <RobotIcon className="h-6 w-6" />
           </button>
 
           {tutorDrawerOpen && (

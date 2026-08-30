@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useTutorContext } from "./TutorContext";
+import { RobotIcon } from "./RobotIcon";
 
 interface TutorPanelProps {
   /** ドロワー表示のときだけ渡す。閉じるボタンを表示する */
@@ -34,7 +35,10 @@ export function TutorPanel({ onClose }: TutorPanelProps) {
   return (
     <div className="flex h-full flex-col rounded-md border border-foreground/10">
       <div className="flex items-center justify-between border-b border-foreground/10 px-3 py-2">
-        <p className="text-sm font-semibold">🦀 AIチューター</p>
+        <p className="flex items-center gap-1.5 text-sm font-semibold">
+          <RobotIcon className="h-4 w-4" />
+          AIチューター
+        </p>
         {onClose && (
           <button
             type="button"
