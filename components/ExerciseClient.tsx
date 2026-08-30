@@ -6,8 +6,10 @@ import { ErrorHelp } from "@/components/ErrorHelp";
 import { GradeResultPanel } from "@/components/GradeResultPanel";
 import { HintDisclosure } from "@/components/HintDisclosure";
 import { SolutionDisclosure } from "@/components/SolutionDisclosure";
+import { useTutorContext } from "@/components/tutor/TutorContext";
 import { buildTestHarness, grade, hasUnitTestCheck } from "@/lib/grading";
 import { progressStore } from "@/lib/progress";
+import { getErrorExplanation } from "@/lib/rustc-errors";
 import type { Exercise } from "@/content/lessons/types";
 import type { RunMode, RunResult } from "@/lib/runner/types";
 
@@ -20,22 +22,50 @@ const DEFAULT_FONT_SIZE = 14;
 const MIN_FONT_SIZE = 12;
 const MAX_FONT_SIZE = 24;
 const FONT_SIZE_STEP = 2;
+// AIチューターAPI(lib/tutor/config.ts)側のMAX_RUN_OUTPUT_LENGTHと揃える。
+// config.tsはprocess.envを参照するためクライアントからは直接importしない。
+const MAX_TUTOR_OUTPUT_LENGTH = 4_000;
+
+function truncateForTutor(text: string): string {
+  return text.length <= MAX_TUTOR_OUTPUT_LENGTH ? text : text.slice(0, MAX_TUTOR_OUTPUT_LENGTH);
+}
 
 interface ExerciseClientProps {
   lessonId: string;
   exercise: Exercise;
   /** 集中モード中はエディタの表示領域を広げる */
   focusMode?: boolean;
+  /**
+   * ヒント・解答例をこのコンポーネント内に表示するか。
+   * 集中モードではLessonWorkspaceがAIチューターと同じ列にまとめて表示するため false にする。
+   */
+  showHints?: boolean;
 }
 
 /** レッスンの演習パネル。エディタ・採点・ヒント・解答例を1つにまとめる */
-export function ExerciseClient({ lessonId, exercise, focusMode }: ExerciseClientProps) {
+export function ExerciseClient({
+  lessonId,
+  exercise,
+  focusMode,
+  showHints = true,
+}: ExerciseClientProps) {
   const [code, setCode] = useState(exercise.starterCode);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RunResult | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
   const lastRunAtRef = useRef(0);
+  const lastAutoErrorKeyRef = useRef<string | null>(null);
+
+  const tutor = useTutorContext();
+
+  const handleCodeChange = useCallback(
+    (value: string) => {
+      setCode(value);
+      tutor.setCode(value);
+    },
+    [tutor],
+  );
 
   const isTestMode = useMemo(() => hasUnitTestCheck(exercise.checks), [exercise.checks]);
   const harness = useMemo(() => buildTestHarness(exercise.checks), [exercise.checks]);
@@ -70,15 +100,39 @@ export function ExerciseClient({ lessonId, exercise, focusMode }: ExerciseClient
       const data = (await response.json()) as RunResult;
       setResult(data);
 
+      const tutorRunResult = {
+        success: data.success,
+        stdout: truncateForTutor(data.stdout),
+        stderr: truncateForTutor(data.stderr),
+        errorCodes: data.errorCodes,
+      };
+      tutor.setRunResult(tutorRunResult);
+
       const report = grade(exercise.checks, data);
-      if (report.passed) progressStore.markCompleted(lessonId);
+      tutor.setPassed(report.passed);
+
+      if (report.passed) {
+        progressStore.markCompleted(lessonId);
+      } else {
+        // 辞書(lib/rustc-errors.ts)に載っているエラーはErrorHelpが即座に説明できるので、
+        // そこでカバーできない失敗(未知のエラーコード、または出力不一致など)のときだけ
+        // AIチューターに自動で解説を頼む。同じ失敗内容には1回しか送らない。
+        const explainableByDict = data.errorCodes.some(
+          (code) => getErrorExplanation(code) !== undefined,
+        );
+        const autoErrorKey = `${data.success}|${data.stdout}|${data.stderr}`;
+        if (!explainableByDict && lastAutoErrorKeyRef.current !== autoErrorKey) {
+          lastAutoErrorKeyRef.current = autoErrorKey;
+          void tutor.send("error", undefined, tutorRunResult);
+        }
+      }
     } catch {
       setApiError("ネットワークエラーが発生しました。");
       setResult(null);
     } finally {
       setLoading(false);
     }
-  }, [code, harness, isTestMode, exercise.checks, lessonId]);
+  }, [code, harness, isTestMode, exercise.checks, lessonId, tutor]);
 
   const report = result ? grade(exercise.checks, result) : null;
 
@@ -120,7 +174,8 @@ export function ExerciseClient({ lessonId, exercise, focusMode }: ExerciseClient
       >
         <CodeEditor
           value={code}
-          onChange={setCode}
+          onChange={handleCodeChange}
+          onSelectionChange={tutor.setSelection}
           minHeight={focusMode ? "60vh" : "200px"}
           fontSize={focusMode ? fontSize : undefined}
         />
@@ -165,10 +220,12 @@ export function ExerciseClient({ lessonId, exercise, focusMode }: ExerciseClient
         </details>
       )}
 
-      <div className="flex flex-col gap-2 border-t border-foreground/10 pt-3">
-        <HintDisclosure hints={exercise.hints} />
-        <SolutionDisclosure solution={exercise.solution} />
-      </div>
+      {showHints && (
+        <div className="flex flex-col gap-2 border-t border-foreground/10 pt-3">
+          <HintDisclosure hints={exercise.hints} />
+          <SolutionDisclosure solution={exercise.solution} />
+        </div>
+      )}
     </div>
   );
 }
